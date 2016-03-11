@@ -68,6 +68,13 @@ module Snowplow
         })
       })
 
+    # The Hash containing the extra jobflow steps to run
+    ExtraStepsHash = ({
+      :name => String,
+      :jarfile => String,
+      :arguments => ArrayOf[String]
+      })
+
     # The Hash containing the storage targets to load
     TargetHash = ({
       :name => String,
@@ -128,7 +135,8 @@ module Snowplow
           :hadoop_shred => String
           }),
         :continue_on_unexpected_error => Bool,
-        :output_compression => CompressionFormat
+        :output_compression => CompressionFormat,
+        :extra_steps => ExtraStepsHash
         }),
       :storage => ({
         :download => ({
