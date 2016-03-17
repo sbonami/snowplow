@@ -56,7 +56,6 @@ enrich:
     hadoop_elasticsearch: 0.1.0 # Version of the Hadoop to Elasticsearch copying process
   continue_on_unexpected_error: false # Set to 'true' (and set :out_errors: above) if you don't want any exceptions thrown from ETL
   output_compression: NONE # Compression only supported with Redshift, set to NONE if you have Postgres targets. Allowed formats: NONE, GZIP
-  extra_steps: []         # Set this to add extra jobflow steps. Leave empty otherwise
 storage:
   download:
     folder: # Postgres-only config option. Where to store the downloaded files. Leave blank for Redshift
@@ -96,6 +95,8 @@ storage:
       es_nodes_wan_only: false # Set to true if using Amazon Elasticsearch Service
       maxerror: # Not required for Elasticsearch
       comprows: # Not required for Elasticsearch
+data_modeling:
+  steps: [] # Set this to add extra jobflow steps to perform data modeling. Leave empty otherwise
 monitoring:
   tags: {} # Name-value pairs describing this job
   logging:
