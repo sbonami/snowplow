@@ -68,8 +68,8 @@ module Snowplow
       include Monitoring::Logging
 
       # Initializes our wrapper for the Amazon EMR client.
-      Contract Bool, Bool, Bool, Bool, Bool, ConfigHash, ArrayOf[String], String => EmrJob
-      def initialize(debug, enrich, shred, elasticsearch, s3distcp, config, enrichments_array, resolver)
+      Contract Bool, Bool, Bool, Bool, Bool, Bool, ConfigHash, ArrayOf[String], String => EmrJob
+      def initialize(debug, enrich, data_modeling, shred, elasticsearch, s3distcp, config, enrichments_array, resolver)
 
         logger.debug "Initializing EMR jobflow"
 
@@ -324,6 +324,33 @@ module Snowplow
 
         end
 
+        if data_modeling
+
+          # If we didn't enrich already, we need to copy to HDFS
+          if s3distcp and !enrich
+            copy_to_hdfs_step = Elasticity::S3DistCpStep.new(legacy = @legacy)
+            copy_to_hdfs_step.arguments = [
+              "--src"        , enrich_final_output, # Opposite way round to normal
+              "--dest"       , enrich_step_output,
+              "--srcPattern" , PARTFILE_REGEXP,
+              "--s3Endpoint" , s3_endpoint
+            ] + output_codec_argument
+            copy_to_hdfs_step.name << ": Enriched S3 -> HDFS"
+            @jobflow.add_step(copy_to_hdfs_step)
+          end
+
+          jar_steps = config[:data_modeling][:steps].steps.map { |s|
+            jar_step = Elasticity::CustomJarStep.new(s.jar)
+            jar_step.arguments = s.arguments
+            jar_step
+          }
+
+          jar_steps.each { |js|
+            @jobflow.add_step(js)
+          }
+
+        end
+
         if shred
 
           # 3. Shredding
@@ -335,8 +362,8 @@ module Snowplow
             shred_final_output
           end
 
-          # If we didn't enrich already, we need to copy to HDFS
-          if s3distcp and !enrich
+          # If we didn't enrich or do data modeling already, we need to copy to HDFS
+          if s3distcp and !enrich and !data_modeling
             copy_to_hdfs_step = Elasticity::S3DistCpStep.new(legacy = @legacy)
             copy_to_hdfs_step.arguments = [
               "--src"        , enrich_final_output, # Opposite way round to normal

@@ -58,14 +58,14 @@ module Snowplow
           opts.on('-d', '--debug', 'enable EMR Job Flow debugging') { |config| options[:debug] = true }
           opts.on('-s', '--start YYYY-MM-DD', 'optional start date *') { |config| options[:start] = config }
           opts.on('-e', '--end YYYY-MM-DD', 'optional end date *') { |config| options[:end] = config }
-          opts.on('-x', '--skip staging,s3distcp,emr{enrich,shred,elasticsearch},archive_raw', Array, 'skip work step(s)') { |config| options[:skip] = config }
-          opts.on('-E', '--process-enrich LOCATION', 'run enrichment only on specified location. Implies --skip staging,shred,archive_raw') { |config|
+          opts.on('-x', '--skip staging,s3distcp,emr{enrich,extras,shred,elasticsearch},archive_raw', Array, 'skip work step(s)') { |config| options[:skip] = config }
+          opts.on('-E', '--process-enrich LOCATION', 'run enrichment only on specified location. Implies --skip staging,extras,shred,archive_raw') { |config|
             options[:process_enrich_location] = config
-            options[:skip] = %w(staging shred archive_raw)
+            options[:skip] = %w(staging extras shred archive_raw)
           }
-          opts.on('-S', '--process-shred LOCATION', 'run shredding only on specified location. Implies --skip staging,enrich,archive_raw') { |config|
+          opts.on('-S', '--process-shred LOCATION', 'run shredding only on specified location. Implies --skip staging,enrich,extras,archive_raw') { |config|
             options[:process_shred_location] = config
-            options[:skip] = %w(staging enrich archive_raw)
+            options[:skip] = %w(staging enrich extras archive_raw)
           }
 
           opts.separator ""
